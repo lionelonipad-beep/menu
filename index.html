@@ -543,12 +543,10 @@ function view_plan(){
 
   const otherReady = theirs.length>0 && theirs.every(p=>p.partner_status!=='pending');
   const mineReady  = mine.length>0 && mine.every(p=>p.partner_status!=='pending');
-  const needsResend = draft.status==='proposed' && menuNeedsResend(draft.id);
 
   return `<div class="header">
     <h2>${esc(draft.title||'Tonight')} <span class="pill ${draft.status}">${draft.status}</span></h2>
     ${draft.status==='drafting' ? `<button class="btn primary sm" id="propose">Send to partner →</button>` : ''}
-    ${needsResend ? `<button class="btn primary sm" id="propose">Resend to partner ↻</button>` : ''}
     ${(draft.status==='proposed' && otherReady && mineReady)?`<button class="btn primary sm" id="confirm">Confirm menu ✓</button>`:''}
   </div>
   <div class="section-title">Your picks</div>
@@ -556,7 +554,7 @@ function view_plan(){
   ${(draft.status==='drafting' || draft.status==='proposed') ? `<button class="btn" id="add-pick">+ Add a pick</button>`:''}
   <div class="section-title">Their picks${theirs.length?` — review them`:''}</div>
   ${theirs.length ? theirs.map(p=>pickRow(p,true)).join('') : `<div class="empty">Nothing from them yet.</div>`}
-  ${draft.status==='proposed' ? `<div class="banner">You can still add or remove your own picks before this menu is confirmed.${needsResend ? ' Tap resend to notify your partner about the update.' : ''}</div>` : ''}
+  ${draft.status==='proposed' ? `<div class="banner">You can still add, remove, or edit picks — changes sync live.</div>` : ''}
   <div class="divider"></div>
   <button class="btn ghost sm" id="archive-menu">Archive this menu</button>`;
 }

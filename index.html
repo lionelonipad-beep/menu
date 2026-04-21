@@ -1,0 +1,1322 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="theme-color" content="#111111" />
+<title>Menu</title>
+<link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Menu%22%2C%22short_name%22%3A%22Menu%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23111%22%2C%22theme_color%22%3A%22%23111%22%2C%22start_url%22%3A%22.%2F%22%2C%22icons%22%3A%5B%5D%7D" />
+<style>
+  :root {
+    --bg:#0f0f11; --surface:#1a1a1e; --surface-2:#26262c;
+    --text:#f5f5f7; --muted:#9a9aa2; --accent:#e86a7a; --accent-2:#b47cc7;
+    --ok:#6fcf97; --warn:#f2c94c; --bad:#eb5757; --border:#2e2e36;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased;min-height:100vh}
+  body{padding-bottom:100px}
+  h1,h2,h3,h4{margin:0;font-weight:600}
+  button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  input,textarea,select{font:inherit;color:inherit;background:var(--surface-2);
+    border:1px solid var(--border);border-radius:10px;padding:10px 12px;width:100%}
+  textarea{min-height:72px;resize:vertical}
+  .app{max-width:720px;margin:0 auto;padding:16px}
+  .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:10px}
+  .header h1{font-size:20px;letter-spacing:.3px}
+  .who{font-size:12px;color:var(--muted)}
+  .tabs{display:flex;gap:6px;overflow-x:auto;margin:0 -16px;padding:0 16px 8px;
+    scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{white-space:nowrap;padding:8px 14px;border-radius:999px;background:var(--surface);
+    color:var(--muted);border:1px solid var(--border);font-size:14px}
+  .tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .cat-desc{font-size:12px;color:var(--muted);line-height:1.45;margin:0 0 12px;
+    padding:10px 12px;background:var(--surface);border:1px dashed var(--border);border-radius:10px}
+  .list{display:flex;flex-direction:column;gap:8px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;
+    padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+  .card.done{background:#163022;border-color:#2a5a3a}
+  .card.not-done{background:#341818;border-color:#6a2a2a}
+  .card .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+  .card .content{font-size:15px;line-height:1.35}
+  .meta{font-size:11px;color:var(--muted);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  .pill{font-size:10px;padding:3px 8px;border-radius:999px;background:var(--surface-2);
+    border:1px solid var(--border);color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+  .pill.for_her{color:#ffd7de;border-color:#6a3a42;background:#3a1e24}
+  .pill.for_him{color:#d7e8ff;border-color:#3a4a6a;background:#1e2a3a}
+  .pill.mutual{color:#e0d7ff;border-color:#4a3a6a;background:#2a1e3a}
+  .pill.pending{color:var(--warn);border-color:#6a5a1a}
+  .pill.approved{color:var(--ok);border-color:#2a5a3a}
+  .pill.rejected{color:var(--bad);border-color:#6a2a2a}
+  .pill.her{color:#ffd7de;border-color:#6a3a42;background:#3a1e24}
+  .pill.him{color:#d7e8ff;border-color:#3a4a6a;background:#1e2a3a}
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{padding:10px 14px;border-radius:10px;background:var(--surface-2);
+    border:1px solid var(--border);font-size:14px;display:inline-flex;align-items:center;gap:6px}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.secondary{background:var(--accent-2);border-color:var(--accent-2);color:#fff}
+  .btn.ghost{background:transparent}
+  .btn.ok{background:#1e3a28;border-color:#2a5a3a;color:var(--ok)}
+  .btn.bad{background:#3a1e1e;border-color:#6a2a2a;color:var(--bad)}
+  .btn.sm{padding:6px 10px;font-size:12px}
+  .btn.star{padding:6px 10px;font-size:16px;line-height:1}
+  .btn.lg{padding:14px 20px;font-size:16px;font-weight:600}
+  .btn.block{width:100%;justify-content:center}
+  .nav{position:fixed;left:0;right:0;bottom:0;background:var(--surface);
+    border-top:1px solid var(--border);display:flex;justify-content:space-around;
+    padding:6px 0 calc(6px + env(safe-area-inset-bottom));z-index:9}
+  .nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;
+    font-size:10px;color:var(--muted);padding:6px 2px;position:relative}
+  .nav button.active{color:var(--accent)}
+  .nav .badge{position:absolute;top:2px;right:20%;background:var(--accent);
+    color:#fff;font-size:9px;border-radius:999px;padding:1px 5px;font-weight:600}
+  .nav-icon{font-size:18px;line-height:1}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;
+    justify-content:center;z-index:20;padding:0}
+  .modal-inner{background:var(--surface);width:100%;max-width:720px;border-radius:20px 20px 0 0;
+    padding:20px 16px calc(20px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px;
+    max-height:92vh;overflow:auto}
+  @media (min-width:720px){
+    .modal{align-items:center;padding:20px}
+    .modal-inner{border-radius:20px;max-height:80vh}
+  }
+  .empty{text-align:center;color:var(--muted);padding:30px 20px;font-size:14px}
+  .banner{background:var(--surface);border:1px dashed var(--border);border-radius:14px;
+    padding:12px;color:var(--muted);font-size:13px}
+  .login{min-height:80vh;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:16px;padding:24px;text-align:center}
+  .login h1{font-size:28px}
+  .toast{position:fixed;bottom:110px;left:50%;transform:translateX(-50%);
+    background:var(--surface-2);border:1px solid var(--border);color:var(--text);
+    padding:10px 16px;border-radius:999px;font-size:13px;z-index:30;box-shadow:0 4px 16px rgba(0,0,0,.4)}
+  details{background:var(--surface-2);border-radius:10px;padding:8px 12px;border:1px solid var(--border)}
+  details summary{cursor:pointer;font-size:13px;color:var(--muted)}
+  .divider{height:1px;background:var(--border);margin:8px 0}
+  .section-title{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);
+    margin:16px 0 8px}
+  .reactions{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-top:4px}
+  .reaction-chip{background:var(--surface-2);border:1px solid var(--border);border-radius:999px;
+    padding:2px 8px;font-size:12px;display:inline-flex;align-items:center;gap:4px;cursor:pointer}
+  .reaction-chip.mine{border-color:var(--accent);background:#3a1e24}
+  .reaction-add{background:transparent;border:1px dashed var(--border);border-radius:999px;
+    padding:2px 8px;font-size:12px;color:var(--muted);cursor:pointer}
+  .emoji-picker{display:flex;flex-wrap:wrap;gap:6px;padding:8px;background:var(--surface-2);
+    border:1px solid var(--border);border-radius:10px;margin-top:4px}
+  .emoji-picker button{font-size:20px;padding:4px 8px;border-radius:8px}
+  .emoji-picker button:hover{background:var(--surface)}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .label{font-size:12px;color:var(--muted);margin-bottom:4px;display:block}
+  .deck-cover{background:linear-gradient(135deg,#2a1e3a,#1e2a3a,#3a1e24);
+    border:1px solid var(--border);border-radius:20px;padding:40px 20px;text-align:center;
+    box-shadow:0 8px 32px rgba(0,0,0,.4);margin-bottom:16px}
+  .deck-cover .count{font-size:14px;color:var(--muted);margin-top:8px}
+  .big-card{background:linear-gradient(135deg,var(--accent),var(--accent-2));
+    color:#fff;padding:32px 20px;border-radius:20px;text-align:center;
+    box-shadow:0 8px 32px rgba(0,0,0,.4);margin-bottom:16px}
+  .big-card .content{font-size:22px;line-height:1.3;font-weight:600;margin-bottom:12px}
+  .big-card .qty{font-size:36px;font-weight:700;letter-spacing:1px;margin:8px 0}
+  .big-card .meta-inline{font-size:12px;opacity:.85;text-transform:uppercase;letter-spacing:1.5px}
+  .timer-display{font-size:56px;font-weight:700;text-align:center;letter-spacing:2px;
+    font-variant-numeric:tabular-nums;margin:16px 0;color:var(--accent)}
+  .scoreboard{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+  .score-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;
+    padding:12px;text-align:center}
+  .score-card .who{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+  .score-card .val{font-size:20px;font-weight:700;margin-top:4px}
+  .score-card.her{border-color:#6a3a42;background:#2a1418}
+  .score-card.him{border-color:#3a4a6a;background:#14202a}
+</style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4';
+
+// ---- CONFIG ----
+const SUPABASE_URL  = localStorage.getItem('SUPABASE_URL')  || '__SET_ME__';
+const SUPABASE_ANON = localStorage.getItem('SUPABASE_ANON') || '__SET_ME__';
+
+const CATS = [
+  { key:'throughout_day', label:'Throughout the Day',
+    desc:'Small acts of attention sprinkled across the day — compliments, flirty texts, a cheeky photo, a lingering touch in passing. Non-sexual to lightly suggestive.' },
+  { key:'appetiser', label:'Appetiser',
+    desc:'Low-pressure warm-ups that ease you both into the mood — massages, neck kisses, slow undressing, cuddling that lingers.' },
+  { key:'main', label:'Main',
+    desc:'The core of the encounter — making out, touching, oral, fingering, whatever already feels good when you\'re in it.' },
+  { key:'finisher', label:'Finisher',
+    desc:'How each of you likes things to wrap up — the specific way you most want to be sent over the edge.' },
+  { key:'new', label:'New',
+    desc:'Spicy ideas neither of you has tried yet but wants to. The trial-run shelf.' },
+];
+const DIRS = [
+  { key:'for_her', label:'For her' },
+  { key:'for_him', label:'For him' },
+  { key:'mutual',  label:'Mutual' },
+];
+const QTY_TYPES = [
+  { key:'none',              label:'No quantity' },
+  { key:'seconds',           label:'Seconds (with timer)' },
+  { key:'count',             label:'Number of times' },
+  { key:'until_completion',  label:'Until completion' },
+];
+const EMOJI_PALETTE = ['🔥','😈','💕','😏','👀','💦','🙈','😍','🥵','👅','🍑','💋','🤤','😳','❤️'];
+
+// --- Config screen ---
+if (SUPABASE_URL === '__SET_ME__' || SUPABASE_ANON === '__SET_ME__') {
+  const r = document.getElementById('root');
+  r.innerHTML = `<div class="login"><h1>Setup</h1>
+    <p style="color:var(--muted);max-width:420px">Paste your Supabase URL and publishable key.</p>
+    <input id="u" placeholder="https://xxxxx.supabase.co" />
+    <input id="k" placeholder="sb_publishable_... or eyJ..." />
+    <button class="btn primary" id="save">Save & reload</button></div>`;
+  document.getElementById('save').onclick = () => {
+    const u = document.getElementById('u').value.trim();
+    const k = document.getElementById('k').value.trim();
+    if (!u || !k) return;
+    localStorage.setItem('SUPABASE_URL', u);
+    localStorage.setItem('SUPABASE_ANON', k);
+    location.reload();
+  };
+  throw new Error('Setup pending');
+}
+
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON, { auth:{ persistSession:true, autoRefreshToken:true } });
+
+// -------------- State --------------
+const state = {
+  user: null, members: [],
+  items: [], menus: [], menuItems: [],
+  decks: [], deckCards: [], deckPlays: [], playDraws: [],
+  view: 'categories', activeCat: 'main',
+  tonightFilter: 'all',
+  modal: null, toast: null,
+  openEmoji: null,       // id of card whose emoji picker is open
+  editingDeck: null,     // deck object being edited (client-side draft)
+  activePlay: null,      // id of current deck_plays row
+  timer: null,           // { seconds, remaining, running, intervalId }
+};
+const root = document.getElementById('root');
+
+function setState(patch){ Object.assign(state, patch); render(); }
+function showToast(msg){
+  state.toast = msg; render();
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(()=>{ state.toast=null; render(); }, 2200);
+}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function nameOf(uid){ return state.members.find(m=>m.user_id===uid)?.display_name || 'someone'; }
+function isMe(uid){ return state.user && uid === state.user.id; }
+function menuSnapshot(menuId){
+  return JSON.stringify(
+    state.menuItems
+      .filter(p=>p.menu_id===menuId)
+      .map(p=>`${p.item_id}:${p.picked_by}:${p.partner_status}:${p.partner_note||''}`)
+      .sort()
+  );
+}
+function rememberMenuSnapshot(menuId){
+  try { localStorage.setItem(`menu_sent_snapshot_${menuId}`, menuSnapshot(menuId)); } catch(e){}
+}
+function menuNeedsResend(menuId){
+  try {
+    const saved = localStorage.getItem(`menu_sent_snapshot_${menuId}`);
+    if (!saved) return false;
+    return saved !== menuSnapshot(menuId);
+  } catch(e){ return false; }
+}
+function randInt(min, max){ min=Number(min); max=Number(max); return Math.floor(Math.random()*(max-min+1))+min; }
+function isFavourite(it){ return Array.isArray(it?.favourite_by) && !!state.user && it.favourite_by.includes(state.user.id); }
+
+// -------------- Auth --------------
+async function loadSession(){
+  const { data } = await sb.auth.getSession();
+  state.user = data.session?.user || null;
+  if (state.user) await loadAll();
+  render();
+}
+sb.auth.onAuthStateChange((_e, session)=>{
+  state.user = session?.user || null;
+  if (state.user) loadAll(); render();
+});
+async function sendMagicLink(email){
+  const { error } = await sb.auth.signInWithOtp({ email, options:{ emailRedirectTo: location.href } });
+  if (error) alert(error.message); else alert('Check your email for a login link.');
+}
+async function signOut(){ await sb.auth.signOut(); location.reload(); }
+
+// -------------- Data --------------
+async function loadAll(){
+  const [m, i, mn, mi, d, dc, dp, pd] = await Promise.all([
+    sb.from('couple_members').select('*'),
+    sb.from('items').select('*').order('created_at', { ascending:false }),
+    sb.from('menus').select('*').order('created_at', { ascending:false }),
+    sb.from('menu_items').select('*'),
+    sb.from('decks').select('*').order('created_at', { ascending:false }),
+    sb.from('deck_cards').select('*'),
+    sb.from('deck_plays').select('*').order('started_at', { ascending:false }),
+    sb.from('play_draws').select('*'),
+  ]);
+  state.members   = m.data || [];
+  state.items     = i.data || [];
+  state.menus     = mn.data || [];
+  state.menuItems = mi.data || [];
+  state.decks     = d.data  || [];
+  state.deckCards = dc.data || [];
+  state.deckPlays = dp.data || [];
+  state.playDraws = pd.data || [];
+
+  const activeUnended = state.deckPlays.find(p => !p.ended_at);
+  if (activeUnended) {
+    state.activePlay = activeUnended.id;
+  } else if (state.activePlay && !state.deckPlays.find(p => p.id === state.activePlay && !p.ended_at)) {
+    state.activePlay = null;
+    state.timer = null;
+  }
+
+  render();
+  subscribeRealtime();
+}
+
+let subbed = false;
+function subscribeRealtime(){
+  if (subbed) return; subbed = true;
+  ['items','menus','menu_items','decks','deck_cards','deck_plays','play_draws'].forEach(tbl=>{
+    sb.channel('rt_'+tbl).on('postgres_changes', { event:'*', schema:'public', table:tbl }, loadAll).subscribe();
+  });
+}
+
+// -------------- Actions --------------
+async function addItem(payload){
+  const { error } = await sb.from('items').insert({ ...payload, created_by: state.user.id, status: 'pending' });
+  if (error) return alert(error.message);
+  showToast('Submitted for partner approval');
+}
+async function setItemStatus(id, status){
+  const { error } = await sb.from('items').update({ status }).eq('id', id);
+  if (error) alert(error.message);
+}
+async function updateItemFields(id, patch){
+  // Edits name/notes/direction/quantity — does NOT touch status, so no re-approval.
+  const { error } = await sb.from('items').update(patch).eq('id', id);
+  if (error) return alert(error.message);
+  showToast('Saved');
+}
+async function toggleFavourite(id){
+  const it = state.items.find(x=>x.id===id); if (!it || !state.user) return;
+  const current = Array.isArray(it.favourite_by) ? it.favourite_by : [];
+  const next = current.includes(state.user.id)
+    ? current.filter(uid=>uid!==state.user.id)
+    : [...current, state.user.id];
+  const { error } = await sb.from('items').update({ favourite_by: next }).eq('id', id);
+  if (error) return alert(error.message);
+  showToast(next.includes(state.user.id) ? 'Added to favourites' : 'Removed from favourites');
+}
+async function deleteItem(id){
+  if (!confirm('Delete this item?')) return;
+  const { error } = await sb.from('items').delete().eq('id', id);
+  if (error) alert(error.message);
+}
+async function toggleReaction(table, id, emoji){
+  const rows = table==='items' ? state.items : state.menuItems;
+  const row = rows.find(r=>r.id===id); if (!row) return;
+  const existing = (row.reactions || []);
+  const mine = existing.find(r=>r.user_id===state.user.id && r.emoji===emoji);
+  let next;
+  if (mine) next = existing.filter(r=>!(r.user_id===state.user.id && r.emoji===emoji));
+  else next = [...existing, { user_id: state.user.id, emoji, created_at: new Date().toISOString() }];
+  const { error } = await sb.from(table).update({ reactions: next }).eq('id', id);
+  if (error) alert(error.message);
+}
+
+async function createMenu(title){
+  const { data, error } = await sb.from('menus').insert({
+    title: title || 'Tonight', created_by: state.user.id, status: 'drafting'
+  }).select().single();
+  if (error){ alert(error.message); return null; }
+  return data;
+}
+async function addPick(menuId, itemId){
+  const { error } = await sb.from('menu_items').insert({
+    menu_id: menuId, item_id: itemId, picked_by: state.user.id
+  });
+  if (error) alert(error.message);
+}
+async function removePick(id){ const { error } = await sb.from('menu_items').delete().eq('id', id); if (error) alert(error.message); }
+async function setMenuStatus(id, status){ const { error } = await sb.from('menus').update({ status }).eq('id', id); if (error) alert(error.message); }
+async function setPickStatus(id, partner_status, partner_note=null){
+  const { error } = await sb.from('menu_items').update({ partner_status, partner_note }).eq('id', id);
+  if (error) alert(error.message);
+}
+async function setTonightStatus(id, tonight_status){
+  const { error } = await sb.from('menu_items').update({ tonight_status }).eq('id', id);
+  if (error) return alert(error.message);
+  if (tonight_status==='completed') showToast('Marked completed');
+  else if (tonight_status==='not_completed') showToast('Marked not completed');
+  else showToast('Cleared status');
+}
+
+// --- Decks ---
+async function createDeck(name, cards){
+  const { data, error } = await sb.from('decks').insert({ name, created_by: state.user.id }).select().single();
+  if (error) return alert(error.message);
+  if (cards.length){
+    const rows = cards.map(c=>({ ...c, deck_id: data.id }));
+    const { error: e2 } = await sb.from('deck_cards').insert(rows);
+    if (e2) alert(e2.message);
+  }
+  return data;
+}
+async function updateDeck(deckId, name, cards){
+  await sb.from('decks').update({ name }).eq('id', deckId);
+  await sb.from('deck_cards').delete().eq('deck_id', deckId);
+  if (cards.length){
+    const rows = cards.map(c=>({ ...c, deck_id: deckId }));
+    await sb.from('deck_cards').insert(rows);
+  }
+}
+async function deleteDeck(deckId){
+  if (!confirm('Delete this deck?')) return;
+  await sb.from('decks').delete().eq('id', deckId);
+}
+async function startPlay(deckId){
+  const existing = state.deckPlays.find(p => p.deck_id===deckId && !p.ended_at);
+  if (existing){
+    setState({ activePlay: existing.id });
+    showToast('Resumed play');
+    return;
+  }
+  const { data, error } = await sb.from('deck_plays').insert({ deck_id: deckId, started_by: state.user.id }).select().single();
+  if (error) return alert(error.message);
+  setState({ activePlay: data.id });
+}
+async function endPlay(playId){
+  await sb.from('deck_plays').update({ ended_at: new Date().toISOString() }).eq('id', playId);
+  setState({ activePlay: null, timer: null });
+}
+async function drawCard(target){
+  const play = state.deckPlays.find(p=>p.id===state.activePlay);
+  if (!play) return;
+  const drawnIds = new Set(state.playDraws.filter(d=>d.play_id===play.id).map(d=>d.deck_card_id));
+  const pool = state.deckCards.filter(c=>c.deck_id===play.deck_id && c.target===target && !drawnIds.has(c.id));
+  if (!pool.length){ showToast('No cards left for ' + target); return; }
+  const card = pool[Math.floor(Math.random()*pool.length)];
+  let rolled = null;
+  if (card.quantity_type==='seconds' || card.quantity_type==='count'){
+    const lo = card.quantity_min ?? 1, hi = card.quantity_max ?? lo;
+    rolled = randInt(lo, hi);
+  }
+  const { error } = await sb.from('play_draws').insert({
+    play_id: play.id, deck_card_id: card.id, target, rolled_quantity: rolled
+  });
+  if (error) alert(error.message);
+}
+async function setDrawResult(drawId, result){
+  await sb.from('play_draws').update({ result }).eq('id', drawId);
+  setState({ timer: null });
+}
+async function resetPlay(playId){
+  if (!confirm('Reset the deck? All drawn cards return to the pile.')) return;
+  await sb.from('play_draws').delete().eq('play_id', playId);
+}
+async function updateResolvedDraw(drawId, result){
+  const { error } = await sb.from('play_draws').update({ result }).eq('id', drawId);
+  if (error) return alert(error.message);
+  showToast('History updated');
+}
+
+// -------------- Views --------------
+function view_login(){
+  return `<div class="login"><h1>Menu</h1>
+    <p style="color:var(--muted)">Sign in with a magic link.</p>
+    <input id="email" type="email" placeholder="your@email.com" />
+    <button class="btn primary" id="send">Send magic link</button></div>`;
+}
+
+function reactionBar(table, row){
+  const counts = {};
+  (row.reactions||[]).forEach(r=>{
+    counts[r.emoji] = counts[r.emoji] || { n:0, mine:false };
+    counts[r.emoji].n++;
+    if (r.user_id===state.user.id) counts[r.emoji].mine = true;
+  });
+  const chips = Object.entries(counts).map(([e,v])=>
+    `<button class="reaction-chip ${v.mine?'mine':''}" data-react="${table}|${row.id}|${e}">${e} ${v.n}</button>`
+  ).join('');
+  const pickerOpen = state.openEmoji === `${table}|${row.id}`;
+  return `<div class="reactions">${chips}
+    <button class="reaction-add" data-open-emoji="${table}|${row.id}">+ 😊</button></div>
+    ${pickerOpen ? `<div class="emoji-picker">
+      ${EMOJI_PALETTE.map(e=>`<button data-react="${table}|${row.id}|${e}">${e}</button>`).join('')}
+    </div>`:''}`;
+}
+
+function itemCard(it){
+  const mine = isMe(it.created_by);
+  const favourite = isFavourite(it);
+  const dirPill = `<span class="pill ${it.direction}">${esc(DIRS.find(d=>d.key===it.direction)?.label||'')}</span>`;
+  const statusPill = `<span class="pill ${it.status}">${it.status}</span>`;
+  const qtyPill = it.quantity_type && it.quantity_type!=='none'
+    ? `<span class="pill">${qtyLabel(it)}</span>` : '';
+  const favPill = favourite ? `<span class="pill approved">★ Favourite</span>` : '';
+  const approveBtns = (it.status==='pending' && !mine) ? `
+      <button class="btn ok sm" data-approve="${it.id}">Approve</button>
+      <button class="btn bad sm" data-reject="${it.id}">Reject</button>` : '';
+  const favBtn = it.status==='approved' ? `<button class="btn sm star" data-fav-item="${it.id}" aria-label="${favourite?'Unfavourite':'Favourite'}">${favourite?'★':'☆'}</button>` : '';
+  const editBtn  = `<button class="btn sm" data-edit-item="${it.id}">Edit</button>`;
+  const delBtn   = mine ? `<button class="btn sm ghost" data-del="${it.id}">Delete</button>` : '';
+  return `<div class="card">
+    <div class="top"><div class="content">${esc(it.content)}</div>${favBtn}</div>
+    <div class="meta">${dirPill}${statusPill}${qtyPill}${favPill}
+      <span>by ${esc(nameOf(it.created_by))}</span></div>
+    ${it.notes?`<div class="meta" style="font-style:italic">“${esc(it.notes)}”</div>`:''}
+    ${reactionBar('items', it)}
+    <div class="row">${approveBtns}${editBtn}${delBtn}</div>
+  </div>`;
+}
+
+function qtyLabel(it){
+  if (it.quantity_type==='seconds') return `${it.quantity_min}–${it.quantity_max}s`;
+  if (it.quantity_type==='count')   return `${it.quantity_min}–${it.quantity_max}×`;
+  if (it.quantity_type==='until_completion') return 'until completion';
+  return '';
+}
+
+function view_categories(){
+  const cat = state.activeCat;
+  const catObj = CATS.find(c=>c.key===cat);
+  const approved = state.items
+    .filter(i=>i.category===cat && i.status==='approved')
+    .sort((a,b)=> Number(isFavourite(b)) - Number(isFavourite(a)));
+  const pendingMine = state.items.filter(i=>i.category===cat && i.status==='pending' && isMe(i.created_by));
+  const pendingTheirs = state.items.filter(i=>i.category===cat && i.status==='pending' && !isMe(i.created_by));
+
+  return `<div class="tabs">
+    ${CATS.map(c=>`<button class="tab ${c.key===cat?'active':''}" data-cat="${c.key}">${esc(c.label)}</button>`).join('')}
+  </div>
+  <div class="cat-desc">${esc(catObj.desc)}</div>
+  <div class="row" style="margin-bottom:12px">
+    <button class="btn primary" id="add">+ Add item</button>
+  </div>
+  ${pendingTheirs.length ? `<div class="section-title">Waiting for your approval</div>
+    <div class="list">${pendingTheirs.map(itemCard).join('')}</div>`:''}
+  <div class="section-title">Approved (${approved.length})</div>
+  <div class="list">${approved.length ? approved.map(itemCard).join('') : `<div class="empty">No approved items yet.</div>`}</div>
+  ${pendingMine.length ? `<div class="section-title">Your pending submissions</div>
+    <div class="list">${pendingMine.map(itemCard).join('')}</div>`:''}`;
+}
+
+function view_plan(){
+  const draft = state.menus.find(m=>m.status==='drafting') || state.menus.find(m=>m.status==='proposed');
+  if (!draft){
+    return `<div class="banner">No menu in progress. Start one for tonight.</div>
+      <div style="height:12px"></div>
+      <button class="btn primary" id="new-menu">+ Start tonight's menu</button>`;
+  }
+  const picks = state.menuItems.filter(p=>p.menu_id===draft.id);
+  const mine = picks.filter(p=>isMe(p.picked_by));
+  const theirs = picks.filter(p=>!isMe(p.picked_by));
+
+  const pickRow = (p, reviewable) => {
+    const it = state.items.find(i=>i.id===p.item_id); if (!it) return '';
+    return `<div class="card">
+      <div class="top"><div class="content">${esc(it.content)}</div></div>
+      <div class="meta">
+        <span class="pill ${it.direction}">${esc(DIRS.find(d=>d.key===it.direction)?.label||'')}</span>
+        <span class="pill">${esc(CATS.find(c=>c.key===it.category)?.label||it.category)}</span>
+        <span class="pill ${p.partner_status==='approved'?'approved':p.partner_status==='rejected'?'rejected':'pending'}">${p.partner_status}</span>
+        <span>picked by ${esc(nameOf(p.picked_by))}</span>
+      </div>
+      ${p.partner_note?`<div class="meta" style="font-style:italic">note: ${esc(p.partner_note)}</div>`:''}
+      ${reactionBar('menu_items', p)}
+      ${reviewable && draft.status==='proposed' ? `<div class="row">
+        <button class="btn ok sm" data-pick-approve="${p.id}">Approve</button>
+        <button class="btn bad sm" data-pick-reject="${p.id}">Reject</button>
+        <button class="btn sm" data-pick-swap="${p.id}">Request swap</button></div>`:''}
+      ${isMe(p.picked_by) && (draft.status==='drafting' || draft.status==='proposed') ? `<button class="btn sm ghost" data-pick-remove="${p.id}">Remove</button>`:''}
+    </div>`;
+  };
+
+  const otherReady = theirs.length>0 && theirs.every(p=>p.partner_status!=='pending');
+  const mineReady  = mine.length>0 && mine.every(p=>p.partner_status!=='pending');
+  const needsResend = draft.status==='proposed' && menuNeedsResend(draft.id);
+
+  return `<div class="header">
+    <h2>${esc(draft.title||'Tonight')} <span class="pill ${draft.status}">${draft.status}</span></h2>
+    ${draft.status==='drafting' ? `<button class="btn primary sm" id="propose">Send to partner →</button>` : ''}
+    ${needsResend ? `<button class="btn primary sm" id="propose">Resend to partner ↻</button>` : ''}
+    ${(draft.status==='proposed' && otherReady && mineReady)?`<button class="btn primary sm" id="confirm">Confirm menu ✓</button>`:''}
+  </div>
+  <div class="section-title">Your picks</div>
+  ${mine.length ? mine.map(p=>pickRow(p,false)).join('') : `<div class="empty">You haven't picked anything yet.</div>`}
+  ${(draft.status==='drafting' || draft.status==='proposed') ? `<button class="btn" id="add-pick">+ Add a pick</button>`:''}
+  <div class="section-title">Their picks${theirs.length?` — review them`:''}</div>
+  ${theirs.length ? theirs.map(p=>pickRow(p,true)).join('') : `<div class="empty">Nothing from them yet.</div>`}
+  ${draft.status==='proposed' ? `<div class="banner">You can still add or remove your own picks before this menu is confirmed.${needsResend ? ' Tap resend to notify your partner about the update.' : ''}</div>` : ''}
+  <div class="divider"></div>
+  <button class="btn ghost sm" id="archive-menu">Archive this menu</button>`;
+}
+
+function view_tonight(){
+  const confirmed = state.menus.find(m=>m.status==='confirmed');
+  if (!confirmed) return `<div class="empty">No confirmed menu yet. Plan one in the "Plan" tab.</div>`;
+  const filter = state.tonightFilter || 'all';
+  const picks = state.menuItems.filter(p=>p.menu_id===confirmed.id && p.partner_status==='approved');
+  // Items picked by BOTH partners (at least one pick from each person on the same item_id)
+  const pickersByItem = {};
+  picks.forEach(p=>{ (pickersByItem[p.item_id] ||= new Set()).add(p.picked_by); });
+  const bothItemIds = new Set(Object.entries(pickersByItem)
+    .filter(([,s])=>s.size >= 2).map(([id])=>id));
+  const filtered = picks.filter(p=>{
+    if (filter==='all') return true;
+    if (filter==='mine') return isMe(p.picked_by);
+    if (filter==='theirs') return !isMe(p.picked_by);
+    if (filter==='both') return bothItemIds.has(p.item_id);
+    return true;
+  });
+  const byCat = {};
+  filtered.forEach(p=>{
+    const it = state.items.find(i=>i.id===p.item_id); if(!it) return;
+    (byCat[it.category] ||= []).push({p,it});
+  });
+  const mineName = state.user ? nameOf(state.user.id) : 'My';
+  const partner = state.members.find(m=>state.user && m.user_id!==state.user.id);
+  const theirName = partner?.display_name || 'Partner';
+  return `<h2 style="margin-bottom:12px">🕯️ ${esc(confirmed.title||'Tonight')}</h2>
+    <div class="tabs" style="margin-bottom:12px">
+      <button class="tab ${filter==='all'?'active':''}" data-tonight-filter="all">All</button>
+      <button class="tab ${filter==='mine'?'active':''}" data-tonight-filter="mine">${esc(mineName)}'s picks</button>
+      <button class="tab ${filter==='theirs'?'active':''}" data-tonight-filter="theirs">${esc(theirName)}'s picks</button>
+      <button class="tab ${filter==='both'?'active':''}" data-tonight-filter="both">Both picked</button>
+    </div>
+    ${filtered.length ? CATS.map(c=>{
+      const rows = byCat[c.key]||[]; if (!rows.length) return '';
+      return `<div class="section-title">${esc(c.label)}</div>
+      <div class="list">${rows.map(({p,it})=>{
+        const tonightStatus = p.tonight_status || 'pending';
+        const cardClass = tonightStatus==='completed' ? 'card done' : tonightStatus==='not_completed' ? 'card not-done' : 'card';
+        return `<div class="${cardClass}">
+          <div class="top">
+            <div class="content">${esc(it.content)}</div>
+            <div class="row" style="gap:6px;flex-wrap:nowrap">
+              <button class="btn ok sm" title="Completed" data-tonight-status="${p.id}|completed">✓</button>
+              <button class="btn bad sm" title="Not completed" data-tonight-status="${p.id}|not_completed">✗</button>
+              ${tonightStatus!=='pending' ? `<button class="btn sm ghost" title="Clear" data-tonight-status="${p.id}|pending">Clear</button>` : ''}
+            </div>
+          </div>
+          <div class="meta">
+            <span class="pill ${it.direction}">${esc(DIRS.find(d=>d.key===it.direction)?.label||'')}</span>
+            <span>for ${esc(nameOf(p.picked_by))}</span>
+            ${bothItemIds.has(it.id)?`<span class="pill approved">both picked 💞</span>`:''}
+          </div>
+          ${reactionBar('menu_items', p)}
+        </div>`;
+      }).join('')}</div>`;
+    }).join('') : `<div class="empty">No items in this filter yet.</div>`}
+    <div style="height:16px"></div>
+    <button class="btn ghost sm" id="end-menu">Mark as done / archive</button>`;
+}
+
+function view_pending(){
+  const theirs = state.items.filter(i=>i.status==='pending' && !isMe(i.created_by));
+  const proposed = state.menus.filter(m=>m.status==='proposed');
+  return `<h2 style="margin-bottom:12px">Pending your review</h2>
+    <div class="section-title">New item submissions (${theirs.length})</div>
+    <div class="list">${theirs.length ? theirs.map(itemCard).join('') : `<div class="empty">Nothing to review.</div>`}</div>
+    <div class="section-title">Proposed menus (${proposed.length})</div>
+    ${proposed.length ? proposed.map(m=>`<div class="card">
+      <div class="top"><div class="content">${esc(m.title||'Menu')}</div><span class="pill pending">proposed</span></div>
+      <button class="btn sm" data-go-plan="${m.id}">Review →</button>
+    </div>`).join('') : `<div class="empty">None.</div>`}`;
+}
+
+// --- Games ---
+function view_games(){
+  // Active play?
+  if (state.activePlay){
+    return view_play();
+  }
+  // Editor?
+  if (state.editingDeck){
+    return view_deck_editor();
+  }
+  // Deck list
+  return `<div class="header"><h2>Games — Decks</h2>
+    <button class="btn primary sm" id="new-deck">+ New deck</button></div>
+  ${state.decks.length ? `<div class="list">${state.decks.map(d=>{
+    const count = state.deckCards.filter(c=>c.deck_id===d.id).length;
+    return `<div class="card">
+      <div class="top"><div class="content">${esc(d.name)}</div></div>
+      <div class="meta"><span>${count} cards</span><span>by ${esc(nameOf(d.created_by))}</span></div>
+      <div class="row">
+        <button class="btn primary sm" data-play-deck="${d.id}">${state.deckPlays.some(p=>p.deck_id===d.id && !p.ended_at)?'↺ Continue':'▶ Play'}</button>
+        <button class="btn sm" data-edit-deck="${d.id}">Edit</button>
+        <button class="btn bad sm" data-del-deck="${d.id}">Delete</button>
+      </div></div>`;
+  }).join('')}</div>` : `<div class="empty">No decks yet. Build one to play.</div>`}`;
+}
+
+function view_deck_editor(){
+  const d = state.editingDeck;
+  const cards = d.cards || [];
+  const cardRow = (c, idx) => {
+    const it = c.item_id ? state.items.find(i=>i.id===c.item_id) : null;
+    const content = it ? it.content : c.custom_content;
+    const qty = (c.quantity_type && c.quantity_type!=='none')
+      ? (c.quantity_type==='seconds'?`${c.quantity_min}–${c.quantity_max}s`
+         : c.quantity_type==='count'?`${c.quantity_min}–${c.quantity_max}×`
+         : 'until completion') : 'no quantity';
+    return `<div class="card">
+      <div class="top"><div class="content">${esc(content||'')}</div></div>
+      <div class="meta">
+        <span class="pill ${c.target}">${c.target}</span>
+        <span class="pill">${qty}</span>
+        ${it?'':`<span class="pill">custom</span>`}
+      </div>
+      <div class="row">
+        <button class="btn sm" data-edit-card="${idx}">Edit qty</button>
+        <button class="btn sm ghost" data-remove-card="${idx}">Remove</button>
+      </div>
+    </div>`;
+  };
+  return `<div class="header">
+    <h2>${d.id?'Edit':'New'} deck</h2>
+    <button class="btn ghost sm" id="cancel-deck">Cancel</button>
+  </div>
+  <label class="label">Deck name</label>
+  <input id="deck-name" value="${esc(d.name||'')}" placeholder="e.g. Friday Night" />
+  <div class="row" style="margin-top:12px">
+    <button class="btn" id="add-from-menu">+ From menu</button>
+    <button class="btn" id="add-custom">+ Custom card</button>
+  </div>
+  <div class="section-title">Cards (${cards.length})</div>
+  ${cards.length ? `<div class="list">${cards.map(cardRow).join('')}</div>`
+    : `<div class="empty">No cards yet — add some.</div>`}
+  <div style="height:16px"></div>
+  <button class="btn primary block" id="save-deck">Save deck</button>`;
+}
+
+function view_play(){
+  const play = state.deckPlays.find(p=>p.id===state.activePlay);
+  if (!play) return `<div class="empty">Play session not found.</div>`;
+  const deck = state.decks.find(d=>d.id===play.deck_id);
+  const allCards = state.deckCards.filter(c=>c.deck_id===play.deck_id);
+  const drawsHere = state.playDraws.filter(d=>d.play_id===play.id);
+  const drawnIds = new Set(drawsHere.map(d=>d.deck_card_id));
+
+  const remaining = { her: 0, him: 0 };
+  allCards.forEach(c=>{ if (!drawnIds.has(c.id)) remaining[c.target]++; });
+
+  // Latest pending draw (the card just revealed)
+  const pending = drawsHere.filter(d=>d.result==='pending').sort((a,b)=>new Date(b.drawn_at)-new Date(a.drawn_at))[0];
+
+  // Scoreboard — a win for the target is a loss for the other
+  const tally = { her:{w:0,l:0,d:0}, him:{w:0,l:0,d:0} };
+  drawsHere.forEach(dr=>{
+    const other = dr.target==='her' ? 'him' : 'her';
+    if (dr.result==='success'){ tally[dr.target].w++; tally[other].l++; }
+    else if (dr.result==='fail'){ tally[dr.target].l++; tally[other].w++; }
+    else if (dr.result==='draw'){ tally.her.d++; tally.him.d++; }
+  });
+
+  let body = '';
+  if (pending){
+    const dc = state.deckCards.find(c=>c.id===pending.deck_card_id);
+    const it = dc?.item_id ? state.items.find(i=>i.id===dc.item_id) : null;
+    const content = it ? it.content : dc?.custom_content;
+    let qtyBit = '';
+    if (dc?.quantity_type==='seconds') qtyBit = `<div class="qty">${pending.rolled_quantity}s</div>`;
+    else if (dc?.quantity_type==='count') qtyBit = `<div class="qty">${pending.rolled_quantity}×</div>`;
+    else if (dc?.quantity_type==='until_completion') qtyBit = `<div class="qty">until completion</div>`;
+
+    body = `<div class="big-card">
+      <div class="meta-inline">for ${pending.target}</div>
+      <div class="content">${esc(content||'')}</div>
+      ${qtyBit}
+    </div>
+    ${dc?.quantity_type==='seconds' ? timerWidget(pending.rolled_quantity) : ''}
+    <div class="three-col">
+      <button class="btn ok" data-result="${pending.id}|success">✓ Success</button>
+      <button class="btn bad" data-result="${pending.id}|fail">✗ Fail</button>
+      <button class="btn" data-result="${pending.id}|draw">— Draw</button>
+    </div>`;
+  } else {
+    body = `<div class="deck-cover">
+      <div style="font-size:44px">🂠</div>
+      <div style="font-size:18px;margin-top:8px">${esc(deck?.name||'Deck')}</div>
+      <div class="count">${remaining.her + remaining.him} cards left</div>
+    </div>
+    <div class="two-col">
+      <button class="btn lg" data-draw="her" ${remaining.her?'':'disabled style="opacity:.4"'}>
+        🂡 For her (${remaining.her})
+      </button>
+      <button class="btn lg" data-draw="him" ${remaining.him?'':'disabled style="opacity:.4"'}>
+        🂡 For him (${remaining.him})
+      </button>
+    </div>`;
+  }
+
+  return `<div class="header">
+    <h2>${esc(deck?.name||'Playing')}</h2>
+    <button class="btn ghost sm" id="exit-play">End</button>
+  </div>
+  <div class="scoreboard">
+    <div class="score-card her">
+      <div class="who">Her</div>
+      <div class="val">${tally.her.w}W · ${tally.her.l}L${tally.her.d?` · ${tally.her.d}D`:''}</div>
+    </div>
+    <div class="score-card him">
+      <div class="who">Him</div>
+      <div class="val">${tally.him.w}W · ${tally.him.l}L${tally.him.d?` · ${tally.him.d}D`:''}</div>
+    </div>
+  </div>
+  ${body}
+
+  ${(() => {
+    const resolved = drawsHere.filter(d=>d.result!=='pending')
+      .sort((a,b)=>new Date(b.drawn_at)-new Date(a.drawn_at)).slice(0,8);
+    if (!resolved.length) return '';
+    return `<div class="section-title">History — change result if you misclicked</div>
+    <div class="list">${resolved.map(dr=>{
+      const dc = state.deckCards.find(c=>c.id===dr.deck_card_id);
+      const it = dc?.item_id ? state.items.find(i=>i.id===dc.item_id) : null;
+      const content = it ? it.content : dc?.custom_content;
+      const emoji = dr.result==='success' ? '✓' : dr.result==='fail' ? '✗' : '—';
+      const resultPill = dr.result==='success'?'approved':dr.result==='fail'?'rejected':'pending';
+      return `<div class="card">
+        <div class="top"><div class="content" style="font-size:13px">${esc(content||'')}</div></div>
+        <div class="meta">
+          <span class="pill ${dr.target}">${dr.target}</span>
+          <span class="pill ${resultPill}">${emoji} ${dr.result}</span>
+        </div>
+        <div class="row">
+          <button class="btn sm ok" data-history-result="${dr.id}|success">Win</button>
+          <button class="btn sm bad" data-history-result="${dr.id}|fail">Loss</button>
+          <button class="btn sm" data-history-result="${dr.id}|draw">Draw</button>
+        </div>
+      </div>`;
+    }).join('')}</div>`;
+  })()}
+
+  <div style="height:16px"></div>
+  <button class="btn ghost sm" id="reset-play">Reset deck</button>`;
+}
+
+function timerWidget(seconds){
+  const t = state.timer;
+  const shown = t ? t.remaining : seconds;
+  const mm = Math.floor(shown/60).toString().padStart(2,'0');
+  const ss = (shown%60).toString().padStart(2,'0');
+  return `<div class="timer-display">${mm}:${ss}</div>
+  <div class="row" style="justify-content:center;margin-bottom:12px">
+    ${!t || !t.running ? `<button class="btn primary" id="timer-start" data-secs="${seconds}">▶ Start</button>` : ''}
+    ${t && t.running ? `<button class="btn" id="timer-pause">⏸ Pause</button>`:''}
+    ${t ? `<button class="btn ghost" id="timer-reset" data-secs="${seconds}">Reset</button>`:''}
+  </div>`;
+}
+
+// -------------- Modals --------------
+function modal_addItem(){
+  const cat = state.activeCat;
+  return `<div class="modal-inner">
+    <h3>Add to ${esc(CATS.find(c=>c.key===cat).label)}</h3>
+    <textarea id="m-content" placeholder="What's the item?"></textarea>
+    <div>
+      <label class="label">Who's it for?</label>
+      <select id="m-direction">${DIRS.map(d=>`<option value="${d.key}">${d.label}</option>`).join('')}</select>
+    </div>
+    <div>
+      <label class="label">Quantity (for the Games deck)</label>
+      <select id="m-qtype">${QTY_TYPES.map(q=>`<option value="${q.key}">${q.label}</option>`).join('')}</select>
+    </div>
+    <div class="two-col" id="qty-range" style="display:none">
+      <div><label class="label">Min</label><input id="m-qmin" type="number" min="1" value="5" /></div>
+      <div><label class="label">Max</label><input id="m-qmax" type="number" min="1" value="30" /></div>
+    </div>
+    <input id="m-notes" placeholder="Optional note" />
+    <div class="row" style="justify-content:flex-end">
+      <button class="btn ghost" data-close>Cancel</button>
+      <button class="btn primary" id="m-submit">Submit for approval</button>
+    </div>
+  </div>`;
+}
+
+function modal_addPick(menu){
+  const approved = state.items.filter(i=>i.status==='approved');
+  // Exclude only items *I* have already picked — the partner may have picked the same one and that's fine.
+  const myPickedIds = new Set(state.menuItems.filter(p=>p.menu_id===menu.id && isMe(p.picked_by)).map(p=>p.item_id));
+  const available = approved.filter(i=>!myPickedIds.has(i.id));
+  const favourites = available.filter(i=>isFavourite(i));
+  const groups = CATS.map(c=>({ c, list: available.filter(i=>i.category===c.key) })).filter(g=>g.list.length);
+  return `<div class="modal-inner">
+    <h3>Pick items for "${esc(menu.title||'Tonight')}"</h3>
+    ${favourites.length ? `<div class="section-title">Favourites</div>
+      <div class="list">${favourites.map(i=>`<div class="card">
+        <div class="top"><div class="content">${esc(i.content)}</div><button class="btn sm star" data-fav-item="${i.id}">★</button></div>
+        <div class="meta"><span class="pill ${i.direction}">${esc(DIRS.find(d=>d.key===i.direction)?.label||'')}</span><span class="pill">${esc(CATS.find(c=>c.key===i.category)?.label||i.category)}</span></div>
+        <button class="btn sm primary" data-pick="${i.id}">Add</button>
+      </div>`).join('')}</div>` : ''}
+    ${groups.length ? groups.map(g=>`<details open>
+      <summary>${esc(g.c.label)} (${g.list.length})</summary>
+      <div class="list" style="margin-top:8px">
+        ${g.list.map(i=>`<div class="card">
+          <div class="top"><div class="content">${esc(i.content)}</div><button class="btn sm star" data-fav-item="${i.id}">${isFavourite(i)?'★':'☆'}</button></div>
+          <div class="meta"><span class="pill ${i.direction}">${esc(DIRS.find(d=>d.key===i.direction)?.label||'')}</span></div>
+          <button class="btn sm primary" data-pick="${i.id}">Add</button>
+        </div>`).join('')}
+      </div></details>`).join('') : `<div class="empty">No approved items available.</div>`}
+    <button class="btn" data-close>Done</button>
+  </div>`;
+}
+
+function modal_addDeckFromMenu(){
+  const approved = state.items.filter(i=>i.status==='approved');
+  const groups = CATS.map(c=>({ c, list: approved.filter(i=>i.category===c.key) })).filter(g=>g.list.length);
+  return `<div class="modal-inner">
+    <h3>Add card from menu</h3>
+    <p style="color:var(--muted);font-size:12px;margin:0">Pick an item. Mutual cards let you choose a target. For-her and for-him cards go straight to that pile. Quantity defaults to the item's setting — you can tweak it after adding.</p>
+    ${groups.length ? groups.map(g=>`<details open>
+      <summary>${esc(g.c.label)} (${g.list.length})</summary>
+      <div class="list" style="margin-top:8px">
+        ${g.list.map(i=>`<div class="card">
+          <div class="top"><div class="content">${esc(i.content)}</div></div>
+          <div class="meta">
+            <span class="pill ${i.direction}">${esc(DIRS.find(d=>d.key===i.direction)?.label||'')}</span>
+            ${i.quantity_type && i.quantity_type!=='none'?`<span class="pill">${qtyLabel(i)}</span>`:''}
+          </div>
+          <div class="row">
+            ${i.direction==='mutual'
+              ? `<button class="btn sm primary" data-deck-add-item="${i.id}|her">+ For her</button>
+                 <button class="btn sm primary" data-deck-add-item="${i.id}|him">+ For him</button>`
+              : i.direction==='for_her'
+                ? `<button class="btn sm primary" data-deck-add-item="${i.id}|her">+ Add to her</button>`
+                : `<button class="btn sm primary" data-deck-add-item="${i.id}|him">+ Add to him</button>`}
+          </div>
+        </div>`).join('')}
+      </div></details>`).join('') : `<div class="empty">No approved items yet.</div>`}
+    <button class="btn" data-close>Done</button>
+  </div>`;
+}
+
+function modal_editItem(){
+  const it = state.items.find(i=>i.id===state.modal.itemId);
+  if (!it) return `<div class="modal-inner"><p>Item not found.</p><button class="btn" data-close>Close</button></div>`;
+  return `<div class="modal-inner">
+    <h3>Edit item</h3>
+    <p style="color:var(--muted);font-size:12px;margin:0">Edits don't trigger re-approval.</p>
+    <textarea id="ei-content">${esc(it.content)}</textarea>
+    <div>
+      <label class="label">Who's it for?</label>
+      <select id="ei-direction">${DIRS.map(d=>`<option value="${d.key}" ${it.direction===d.key?'selected':''}>${d.label}</option>`).join('')}</select>
+    </div>
+    <div>
+      <label class="label">Quantity</label>
+      <select id="ei-qtype">${QTY_TYPES.map(q=>`<option value="${q.key}" ${(it.quantity_type||'none')===q.key?'selected':''}>${q.label}</option>`).join('')}</select>
+    </div>
+    <div class="two-col" id="ei-qty-range" style="display:none">
+      <div><label class="label">Min</label><input id="ei-qmin" type="number" min="1" value="${it.quantity_min||5}" /></div>
+      <div><label class="label">Max</label><input id="ei-qmax" type="number" min="1" value="${it.quantity_max||30}" /></div>
+    </div>
+    <input id="ei-notes" placeholder="Optional note" value="${esc(it.notes||'')}" />
+    <div class="row" style="justify-content:flex-end">
+      <button class="btn ghost" data-close>Cancel</button>
+      <button class="btn primary" id="ei-submit">Save</button>
+    </div>
+  </div>`;
+}
+
+function modal_editDeckCard(){
+  const idx = state.modal.idx;
+  const c = state.editingDeck.cards[idx];
+  const it = c.item_id ? state.items.find(i=>i.id===c.item_id) : null;
+  const content = it ? it.content : c.custom_content;
+  return `<div class="modal-inner">
+    <h3>Edit quantity for this card</h3>
+    <div class="banner">${esc(content||'')}</div>
+    <div>
+      <label class="label">Target</label>
+      <select id="e-target">
+        <option value="her" ${c.target==='her'?'selected':''}>For her</option>
+        <option value="him" ${c.target==='him'?'selected':''}>For him</option>
+      </select>
+    </div>
+    <div>
+      <label class="label">Quantity type</label>
+      <select id="e-qtype">${QTY_TYPES.map(q=>`<option value="${q.key}" ${c.quantity_type===q.key?'selected':''}>${q.label}</option>`).join('')}</select>
+    </div>
+    <div class="two-col" id="e-qty-range" style="display:none">
+      <div><label class="label">Min</label><input id="e-qmin" type="number" min="1" value="${c.quantity_min||5}" /></div>
+      <div><label class="label">Max</label><input id="e-qmax" type="number" min="1" value="${c.quantity_max||30}" /></div>
+    </div>
+    <p style="color:var(--muted);font-size:12px;margin:0">Changes apply only to this deck — they don't affect the underlying menu item.</p>
+    <div class="row" style="justify-content:flex-end">
+      <button class="btn ghost" data-close>Cancel</button>
+      <button class="btn primary" id="e-submit">Save</button>
+    </div>
+  </div>`;
+}
+
+function modal_addCustomCard(){
+  return `<div class="modal-inner">
+    <h3>Custom card</h3>
+    <textarea id="c-content" placeholder="What goes on the card?"></textarea>
+    <div>
+      <label class="label">Target</label>
+      <select id="c-target"><option value="her">For her</option><option value="him">For him</option></select>
+    </div>
+    <div>
+      <label class="label">Quantity</label>
+      <select id="c-qtype">${QTY_TYPES.map(q=>`<option value="${q.key}">${q.label}</option>`).join('')}</select>
+    </div>
+    <div class="two-col" id="c-qty-range" style="display:none">
+      <div><label class="label">Min</label><input id="c-qmin" type="number" min="1" value="5" /></div>
+      <div><label class="label">Max</label><input id="c-qmax" type="number" min="1" value="30" /></div>
+    </div>
+    <div class="row" style="justify-content:flex-end">
+      <button class="btn ghost" data-close>Cancel</button>
+      <button class="btn primary" id="c-submit">Add card</button>
+    </div>
+  </div>`;
+}
+
+// -------------- Render --------------
+function render(){
+  if (!state.user){ root.innerHTML = view_login(); bind(); return; }
+  const me = state.members.find(m=>m.user_id===state.user.id);
+  const pendingCount = state.items.filter(i=>i.status==='pending' && !isMe(i.created_by)).length
+                    + state.menus.filter(m=>m.status==='proposed').length;
+
+  let body = '';
+  if (state.view==='categories') body = view_categories();
+  else if (state.view==='plan')   body = view_plan();
+  else if (state.view==='tonight')body = view_tonight();
+  else if (state.view==='games')  body = view_games();
+  else if (state.view==='pending')body = view_pending();
+
+  root.innerHTML = `<div class="app">
+    <div class="header"><h1>Menu</h1>
+      <div class="who">${esc(me?.display_name || state.user.email)}
+        · <button class="btn ghost sm" id="signout">sign out</button></div>
+    </div>
+    ${!me ? `<div class="banner">
+      You're signed in but not yet in the couple allowlist. Add your user ID to
+      <code>couple_members</code> via Supabase SQL editor.
+      Your ID: <code>${esc(state.user.id)}</code>
+    </div>` : body}
+  </div>
+
+  <nav class="nav">
+    <button data-view="categories" class="${state.view==='categories'?'active':''}"><span class="nav-icon">🍽️</span>Menu</button>
+    <button data-view="plan" class="${state.view==='plan'?'active':''}"><span class="nav-icon">📝</span>Plan</button>
+    <button data-view="tonight" class="${state.view==='tonight'?'active':''}"><span class="nav-icon">🌙</span>Tonight</button>
+    <button data-view="games" class="${state.view==='games'?'active':''}"><span class="nav-icon">🃏</span>Games</button>
+    <button data-view="pending" class="${state.view==='pending'?'active':''}"><span class="nav-icon">🔔</span>Pending
+      ${pendingCount?`<span class="badge">${pendingCount}</span>`:''}
+    </button>
+  </nav>
+  ${state.modal ? `<div class="modal" id="modal-root">${renderModal()}</div>`:''}
+  ${state.toast ? `<div class="toast">${esc(state.toast)}</div>`:''}`;
+  bind();
+  applyQtyToggle();
+}
+
+function renderModal(){
+  if (!state.modal) return '';
+  if (state.modal.type==='add') return modal_addItem();
+  if (state.modal.type==='addPick') return modal_addPick(state.modal.menu);
+  if (state.modal.type==='deckAddFromMenu') return modal_addDeckFromMenu();
+  if (state.modal.type==='deckAddCustom') return modal_addCustomCard();
+  if (state.modal.type==='editDeckCard') return modal_editDeckCard();
+  if (state.modal.type==='editItem') return modal_editItem();
+  return '';
+}
+
+function applyQtyToggle(){
+  const t1 = document.getElementById('m-qtype');
+  if (t1){
+    const r = document.getElementById('qty-range');
+    const upd = ()=> r.style.display = (t1.value==='seconds'||t1.value==='count')?'grid':'none';
+    t1.onchange = upd; upd();
+  }
+  const t2 = document.getElementById('c-qtype');
+  if (t2){
+    const r = document.getElementById('c-qty-range');
+    const upd = ()=> r.style.display = (t2.value==='seconds'||t2.value==='count')?'grid':'none';
+    t2.onchange = upd; upd();
+  }
+  const t3 = document.getElementById('e-qtype');
+  if (t3){
+    const r = document.getElementById('e-qty-range');
+    const upd = ()=> r.style.display = (t3.value==='seconds'||t3.value==='count')?'grid':'none';
+    t3.onchange = upd; upd();
+  }
+  const t4 = document.getElementById('ei-qtype');
+  if (t4){
+    const r = document.getElementById('ei-qty-range');
+    const upd = ()=> r.style.display = (t4.value==='seconds'||t4.value==='count')?'grid':'none';
+    t4.onchange = upd; upd();
+  }
+}
+
+// -------------- Timer --------------
+function startTimer(seconds){
+  if (state.timer && state.timer.running) return;
+  if (!state.timer) state.timer = { seconds, remaining: seconds, running:false, intervalId:null };
+  state.timer.running = true;
+  state.timer.intervalId = setInterval(()=>{
+    state.timer.remaining--;
+    if (state.timer.remaining <= 0){
+      clearInterval(state.timer.intervalId);
+      state.timer.running = false;
+      state.timer.remaining = 0;
+      playBeep();
+    }
+    render();
+  }, 1000);
+  render();
+}
+function pauseTimer(){ if (state.timer?.intervalId){ clearInterval(state.timer.intervalId); state.timer.running=false; render(); } }
+function resetTimer(seconds){
+  if (state.timer?.intervalId) clearInterval(state.timer.intervalId);
+  state.timer = { seconds, remaining: seconds, running:false, intervalId:null };
+  render();
+}
+function playBeep(){
+  try {
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const o = ctx.createOscillator(); const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type='sine'; o.frequency.value=880;
+    g.gain.setValueAtTime(0.3, ctx.currentTime);
+    o.start(); o.stop(ctx.currentTime + 0.6);
+    setTimeout(()=>{
+      const o2 = ctx.createOscillator(); const g2 = ctx.createGain();
+      o2.connect(g2); g2.connect(ctx.destination);
+      o2.type='sine'; o2.frequency.value=1320;
+      g2.gain.setValueAtTime(0.3, ctx.currentTime);
+      o2.start(); o2.stop(ctx.currentTime + 0.6);
+    }, 300);
+    if (navigator.vibrate) navigator.vibrate([200,100,200]);
+  } catch(e){}
+}
+
+// -------------- Event binding --------------
+function bind(){
+  // Login
+  const sendBtn = document.getElementById('send');
+  if (sendBtn) sendBtn.onclick = ()=>{ const e = document.getElementById('email').value.trim(); if (e) sendMagicLink(e); };
+  const so = document.getElementById('signout'); if (so) so.onclick = signOut;
+
+  // Nav
+  document.querySelectorAll('.nav button').forEach(b=>{
+    b.onclick = ()=> setState({ view: b.dataset.view, editingDeck:null });
+  });
+  // Tabs
+  document.querySelectorAll('.tab').forEach(t=> t.onclick = ()=> setState({ activeCat: t.dataset.cat }));
+  document.querySelectorAll('[data-tonight-filter]').forEach(t=> t.onclick = ()=> setState({ tonightFilter: t.dataset.tonightFilter }));
+
+  // Category actions
+  const add = document.getElementById('add');
+  if (add) add.onclick = ()=> setState({ modal:{ type:'add' } });
+
+  // Item actions
+  document.querySelectorAll('[data-approve]').forEach(b=>b.onclick=()=>setItemStatus(b.dataset.approve,'approved'));
+  document.querySelectorAll('[data-reject]').forEach(b=>b.onclick=()=>setItemStatus(b.dataset.reject,'rejected'));
+  document.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>deleteItem(b.dataset.del));
+  document.querySelectorAll('[data-edit-item]').forEach(b=>b.onclick=()=>setState({ modal:{ type:'editItem', itemId:b.dataset.editItem } }));
+  document.querySelectorAll('[data-fav-item]').forEach(b=>b.onclick=(e)=>{ e.stopPropagation(); toggleFavourite(b.dataset.favItem); });
+  const eis = document.getElementById('ei-submit');
+  if (eis) eis.onclick = async ()=>{
+    const itemId = state.modal.itemId;
+    const content = document.getElementById('ei-content').value.trim();
+    if (!content) return;
+    const qtype = document.getElementById('ei-qtype').value;
+    const patch = {
+      content,
+      direction: document.getElementById('ei-direction').value,
+      notes: document.getElementById('ei-notes').value.trim() || null,
+      quantity_type: qtype,
+      quantity_min: (qtype==='seconds'||qtype==='count') ? Number(document.getElementById('ei-qmin').value) : null,
+      quantity_max: (qtype==='seconds'||qtype==='count') ? Number(document.getElementById('ei-qmax').value) : null,
+    };
+    await updateItemFields(itemId, patch);
+    setState({ modal:null });
+  };
+
+  // Reactions
+  document.querySelectorAll('[data-open-emoji]').forEach(b=>b.onclick=(e)=>{
+    e.stopPropagation();
+    const key = b.dataset.openEmoji;
+    setState({ openEmoji: state.openEmoji===key ? null : key });
+  });
+  document.querySelectorAll('[data-react]').forEach(b=>b.onclick=(e)=>{
+    e.stopPropagation();
+    const [table, id, emoji] = b.dataset.react.split('|');
+    toggleReaction(table, id, emoji);
+    setState({ openEmoji: null });
+  });
+
+  // Plan actions
+  const nm = document.getElementById('new-menu');
+  if (nm) nm.onclick = async ()=>{ const t = prompt('Title? (optional)','Tonight'); await createMenu(t||'Tonight'); };
+  const ap = document.getElementById('add-pick');
+  if (ap) ap.onclick = ()=>{ const d = state.menus.find(m=>m.status==='drafting') || state.menus.find(m=>m.status==='proposed'); if (d) setState({ modal:{ type:'addPick', menu:d }}); };
+  const propose = document.getElementById('propose');
+  if (propose) propose.onclick = async ()=>{ const d = state.menus.find(m=>m.status==='drafting') || state.menus.find(m=>m.status==='proposed'); if (d){ const wasProposed = d.status==='proposed'; await setMenuStatus(d.id,'proposed'); rememberMenuSnapshot(d.id); showToast(wasProposed ? 'Resent to partner' : 'Sent for review'); } };
+  const conf = document.getElementById('confirm');
+  if (conf) conf.onclick = async ()=>{ const m = state.menus.find(x=>x.status==='proposed'); if (m){ await setMenuStatus(m.id,'confirmed'); showToast('Menu confirmed 🌙'); setState({ view:'tonight' }); } };
+  const arch = document.getElementById('archive-menu');
+  if (arch) arch.onclick = async ()=>{ const m = state.menus.find(x=>x.status==='drafting'||x.status==='proposed'); if (m && confirm('Archive this menu?')) await setMenuStatus(m.id,'archived'); };
+  const endm = document.getElementById('end-menu');
+  if (endm) endm.onclick = async ()=>{ const m = state.menus.find(x=>x.status==='confirmed'); if (m && confirm('Archive tonight\'s menu?')) await setMenuStatus(m.id,'archived'); };
+  document.querySelectorAll('[data-tonight-status]').forEach(b=>b.onclick=()=>{ const [id, status] = b.dataset.tonightStatus.split('|'); setTonightStatus(id, status); });
+  document.querySelectorAll('[data-pick-remove]').forEach(b=>b.onclick=()=>removePick(b.dataset.pickRemove));
+  document.querySelectorAll('[data-pick-approve]').forEach(b=>b.onclick=()=>setPickStatus(b.dataset.pickApprove,'approved'));
+  document.querySelectorAll('[data-pick-reject]').forEach(b=>b.onclick=()=>setPickStatus(b.dataset.pickReject,'rejected'));
+  document.querySelectorAll('[data-pick-swap]').forEach(b=>b.onclick=async ()=>{
+    const note = prompt('What would you prefer instead?') || null;
+    await setPickStatus(b.dataset.pickSwap,'swap_requested', note);
+  });
+  document.querySelectorAll('[data-go-plan]').forEach(b=>b.onclick=()=>setState({ view:'plan' }));
+  document.querySelectorAll('[data-pick]').forEach(b=>b.onclick=async ()=>{
+    const menu = state.modal?.menu || state.menus.find(m=>m.status==='drafting') || state.menus.find(m=>m.status==='proposed');
+    if (!menu) return;
+    await addPick(menu.id, b.dataset.pick);
+    setState({ modal:null });
+    showToast('Added to menu');
+  });
+
+  // Games — deck list
+  const nd = document.getElementById('new-deck');
+  if (nd) nd.onclick = ()=> setState({ editingDeck:{ id:null, name:'', cards:[] } });
+  document.querySelectorAll('[data-edit-deck]').forEach(b=>b.onclick=()=>{
+    const deck = state.decks.find(d=>d.id===b.dataset.editDeck);
+    const cards = state.deckCards.filter(c=>c.deck_id===deck.id).map(c=>({
+      item_id:c.item_id, custom_content:c.custom_content, target:c.target,
+      quantity_type:c.quantity_type, quantity_min:c.quantity_min, quantity_max:c.quantity_max
+    }));
+    setState({ editingDeck:{ id:deck.id, name:deck.name, cards } });
+  });
+  document.querySelectorAll('[data-del-deck]').forEach(b=>b.onclick=()=>deleteDeck(b.dataset.delDeck));
+  document.querySelectorAll('[data-play-deck]').forEach(b=>b.onclick=()=>startPlay(b.dataset.playDeck));
+
+  // Deck editor
+  const cd = document.getElementById('cancel-deck');
+  if (cd) cd.onclick = ()=> setState({ editingDeck:null });
+  const afm = document.getElementById('add-from-menu');
+  if (afm) afm.onclick = ()=> setState({ modal:{ type:'deckAddFromMenu' } });
+  const ac = document.getElementById('add-custom');
+  if (ac) ac.onclick = ()=> setState({ modal:{ type:'deckAddCustom' } });
+  document.querySelectorAll('[data-remove-card]').forEach(b=>b.onclick=()=>{
+    const idx = Number(b.dataset.removeCard);
+    state.editingDeck.cards.splice(idx,1);
+    render();
+  });
+  document.querySelectorAll('[data-edit-card]').forEach(b=>b.onclick=()=>{
+    const idx = Number(b.dataset.editCard);
+    setState({ modal:{ type:'editDeckCard', idx } });
+  });
+  const es = document.getElementById('e-submit');
+  if (es) es.onclick = ()=>{
+    const idx = state.modal.idx;
+    const c = state.editingDeck.cards[idx];
+    c.target = document.getElementById('e-target').value;
+    c.quantity_type = document.getElementById('e-qtype').value;
+    if (c.quantity_type==='seconds' || c.quantity_type==='count'){
+      c.quantity_min = Number(document.getElementById('e-qmin').value);
+      c.quantity_max = Number(document.getElementById('e-qmax').value);
+    } else {
+      c.quantity_min = null; c.quantity_max = null;
+    }
+    setState({ modal:null });
+    showToast('Card updated');
+  };
+  const sd = document.getElementById('save-deck');
+  if (sd) sd.onclick = async ()=>{
+    const name = document.getElementById('deck-name').value.trim();
+    if (!name) return alert('Give the deck a name');
+    const d = state.editingDeck;
+    if (d.id) await updateDeck(d.id, name, d.cards);
+    else await createDeck(name, d.cards);
+    setState({ editingDeck: null });
+    showToast('Deck saved');
+  };
+
+  // Deck editor modals
+  document.querySelectorAll('[data-deck-add-item]').forEach(b=>b.onclick=()=>{
+    const [itemId, target] = b.dataset.deckAddItem.split('|');
+    const it = state.items.find(i=>i.id===itemId);
+    state.editingDeck.cards.push({
+      item_id: itemId, custom_content: null, target,
+      quantity_type: it.quantity_type || 'none',
+      quantity_min: it.quantity_min, quantity_max: it.quantity_max
+    });
+    showToast('Card added');
+    setState({ modal:null });
+  });
+  const cs = document.getElementById('c-submit');
+  if (cs) cs.onclick = ()=>{
+    const content = document.getElementById('c-content').value.trim();
+    if (!content) return;
+    const target = document.getElementById('c-target').value;
+    const qtype = document.getElementById('c-qtype').value;
+    const qmin = qtype==='seconds'||qtype==='count' ? Number(document.getElementById('c-qmin').value) : null;
+    const qmax = qtype==='seconds'||qtype==='count' ? Number(document.getElementById('c-qmax').value) : null;
+    state.editingDeck.cards.push({
+      item_id:null, custom_content: content, target,
+      quantity_type: qtype, quantity_min: qmin, quantity_max: qmax
+    });
+    setState({ modal:null });
+    showToast('Card added');
+  };
+
+  // Play
+  const ep = document.getElementById('exit-play');
+  if (ep) ep.onclick = ()=> endPlay(state.activePlay);
+  const rp = document.getElementById('reset-play');
+  if (rp) rp.onclick = ()=> resetPlay(state.activePlay);
+  document.querySelectorAll('[data-draw]').forEach(b=>b.onclick=()=>{
+    setState({ timer: null });
+    drawCard(b.dataset.draw);
+  });
+  document.querySelectorAll('[data-result]').forEach(b=>b.onclick=()=>{
+    const [id, result] = b.dataset.result.split('|');
+    setDrawResult(id, result);
+  });
+  document.querySelectorAll('[data-history-result]').forEach(b=>b.onclick=()=>{
+    const [id, result] = b.dataset.historyResult.split('|');
+    updateResolvedDraw(id, result);
+  });
+  const ts = document.getElementById('timer-start');
+  if (ts) ts.onclick = ()=> startTimer(Number(ts.dataset.secs));
+  const tp = document.getElementById('timer-pause');
+  if (tp) tp.onclick = pauseTimer;
+  const tr = document.getElementById('timer-reset');
+  if (tr) tr.onclick = ()=> resetTimer(Number(tr.dataset.secs));
+
+  // Modal shared
+  document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>setState({ modal:null }));
+  const submit = document.getElementById('m-submit');
+  if (submit) submit.onclick = async ()=>{
+    const content = document.getElementById('m-content').value.trim();
+    const direction = document.getElementById('m-direction').value;
+    const qtype = document.getElementById('m-qtype').value;
+    const qmin = qtype==='seconds'||qtype==='count' ? Number(document.getElementById('m-qmin').value) : null;
+    const qmax = qtype==='seconds'||qtype==='count' ? Number(document.getElementById('m-qmax').value) : null;
+    const notes = document.getElementById('m-notes').value.trim() || null;
+    if (!content) return;
+    await addItem({ category: state.activeCat, content, direction, notes,
+      quantity_type: qtype, quantity_min: qmin, quantity_max: qmax });
+    setState({ modal:null });
+  };
+}
+
+// -------------- Boot --------------
+loadSession();
+</script>
+</body>
+</html>
